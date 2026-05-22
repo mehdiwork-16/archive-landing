@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  /* Hide default cursor on fine-pointer devices (mouse) */
+  @media (pointer: fine) {
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+  }
+
+  /* Ultra-minimal scrollbar */
+  ::-webkit-scrollbar { width: 1px; }
+  ::-webkit-scrollbar-track { background: #ffffff; }
+  ::-webkit-scrollbar-thumb { background: #000000; }
+
+  /* Selection */
+  ::selection {
+    background: #000000;
+    color: #ffffff;
+  }
+}
+
+@layer utilities {
+  .tabular { font-variant-numeric: tabular-nums; }
+}
