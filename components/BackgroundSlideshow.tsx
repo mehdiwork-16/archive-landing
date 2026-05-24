@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
     bg2.jpg  — aerial cobblestone street
     bg3.jpg  — girl against wall
 */
-const SLIDES = ['/bg1.jpg', '/bg2.jpg', '/bg3.jpg']
+const SLIDES = ['/bg1.jpg', '/bg2.jpg', '/bg3.jpg', '/bg4.jpg']
 
 const DISPLAY_MS = 5500   // how long each photo stays
 const FADE_S    = 1.8     // crossfade duration in seconds
