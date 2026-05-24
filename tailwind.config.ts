@@ -11,6 +11,7 @@ const config: Config = {
         display: ['var(--font-display)', 'serif'],
         body: ['var(--font-body)', 'sans-serif'],
         digits: ['var(--font-digits)', 'sans-serif'],
+        poster: ['var(--font-poster)', 'sans-serif'],
       },
     },
   },

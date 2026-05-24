@@ -13,16 +13,13 @@ export function CustomCursor() {
   const y = useSpring(rawY, { stiffness: 600, damping: 40, mass: 0.4 })
 
   useEffect(() => {
-    // Only activate on fine-pointer (mouse) devices
     if (!window.matchMedia('(pointer: fine)').matches) return
-
     setMounted(true)
 
     function onMove(e: MouseEvent) {
       rawX.set(e.clientX)
       rawY.set(e.clientY)
     }
-
     function onOver(e: MouseEvent) {
       const el = e.target as Element
       setHovered(!!el.closest('button, a, input, [role="button"], label'))
@@ -39,25 +36,29 @@ export function CustomCursor() {
   if (!mounted) return null
 
   return (
+    /*
+     * mix-blend-difference + white fill = cursor is white on dark bg,
+     * black on white bg (modal). Works perfectly for both.
+     */
     <motion.div
-      className="fixed top-0 left-0 pointer-events-none z-[9999]"
+      className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
       style={{ x, y }}
     >
-      {/* Outer ring — appears on hover over interactive elements */}
+      {/* Outer ring on hover */}
       <motion.div
-        className="absolute rounded-full border border-black/60"
+        className="absolute rounded-full border border-white"
         animate={{
-          width: hovered ? 36 : 0,
-          height: hovered ? 36 : 0,
-          x: hovered ? -18 : 0,
-          y: hovered ? -18 : 0,
+          width:   hovered ? 38 : 0,
+          height:  hovered ? 38 : 0,
+          x:       hovered ? -19 : 0,
+          y:       hovered ? -19 : 0,
           opacity: hovered ? 1 : 0,
         }}
-        transition={{ duration: 0.22, ease: 'easeOut' }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
       />
-      {/* Inner dot — always visible */}
+      {/* Inner dot */}
       <div
-        className="w-[7px] h-[7px] rounded-full bg-black"
+        className="w-[7px] h-[7px] rounded-full bg-white"
         style={{ transform: 'translate(-3.5px, -3.5px)' }}
       />
     </motion.div>

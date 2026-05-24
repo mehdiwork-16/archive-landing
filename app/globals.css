@@ -10,33 +10,37 @@
   }
 
   html {
-    scroll-behavior: smooth;
+    /* dvh = dynamic viewport height: accounts for mobile browser chrome */
+    height: 100%;
   }
 
   body {
-    background: #ffffff;
-    color: #000000;
+    min-height: 100%;
+    background: #0a0a0a;
+    color: #ffffff;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    /* Allow y-scroll as safety net on very small/landscape screens */
+    overflow-y: auto;
   }
 
-  /* Hide default cursor on fine-pointer devices (mouse) */
+  /* Hide default cursor on fine-pointer devices */
   @media (pointer: fine) {
     *, *::before, *::after {
       cursor: none !important;
     }
   }
 
-  /* Ultra-minimal scrollbar */
+  /* Scrollbar */
   ::-webkit-scrollbar { width: 1px; }
-  ::-webkit-scrollbar-track { background: #ffffff; }
-  ::-webkit-scrollbar-thumb { background: #000000; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); }
 
   /* Selection */
   ::selection {
-    background: #000000;
-    color: #ffffff;
+    background: #ffffff;
+    color: #0a0a0a;
   }
 }
 

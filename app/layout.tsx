@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, DM_Sans, Syne } from 'next/font/google'
+import { Cormorant_Garamond, DM_Sans, Syne, Bebas_Neue } from 'next/font/google'
 import { CustomCursor } from '@/components/Cursor'
 import './globals.css'
 
@@ -25,19 +25,26 @@ const syne = Syne({
   display: 'swap',
 })
 
+const bebasNeue = Bebas_Neue({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-poster',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'ARCHIVE — New Collection Dropping Soon',
+  title: 'M — New Collection Dropping Soon',
   description:
-    'The next chapter drops October 2026. Join the waitlist for exclusive early access.',
-  keywords: ['streetwear', 'limited edition', 'archive', 'fashion drop', 'collection'],
+    'The next chapter drops July 30, 2026. Join the waitlist for exclusive early access.',
+  keywords: ['streetwear', 'limited edition', 'collection drop', 'coming soon'],
   openGraph: {
-    title: 'ARCHIVE — New Collection Dropping Soon',
+    title: 'M — New Collection Dropping Soon',
     description: 'The next chapter drops soon. Join the waitlist.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ARCHIVE — New Collection Dropping Soon',
+    title: 'M — New Collection Dropping Soon',
     description: 'The next chapter drops soon.',
   },
   robots: { index: true, follow: true },
@@ -47,9 +54,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${dmSans.variable} ${syne.variable}`}
+      className={`${cormorant.variable} ${dmSans.variable} ${syne.variable} ${bebasNeue.variable}`}
     >
-      <body className="bg-white text-black antialiased">
+      <body className="bg-[#0a0a0a] text-white antialiased">
         {children}
         <CustomCursor />
       </body>

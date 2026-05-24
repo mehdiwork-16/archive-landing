@@ -31,3 +31,5 @@ next-env.d.ts
 
 # waitlist data (contains emails — never commit)
 /data/
+
+.vercel
