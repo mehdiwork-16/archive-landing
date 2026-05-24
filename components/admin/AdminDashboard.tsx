@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { WaitlistEntry, OrderEntry } from '@/app/admin/page'
+import type { WaitlistEntry, OrderEntry } from '@/lib/storage'
 
 // ── Drop date (keep in sync with CountdownTimer.tsx) ─────────────────────
 const RELEASE_DATE = new Date('2026-07-30T00:00:00')
