@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { getWaitlist, getOrders } from '@/lib/storage'
 import { AdminDashboard } from '@/components/admin/AdminDashboard'
 
+// Never cache this page — always fetch fresh data from Supabase
+export const dynamic = 'force-dynamic'
+
 export { type WaitlistEntry, type OrderEntry } from '@/lib/storage'
 
 const COOKIE = 'archive_admin'

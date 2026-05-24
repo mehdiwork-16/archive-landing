@@ -66,8 +66,10 @@ export async function addToWaitlist(email: string): Promise<void> {
 
   if (useSupabase()) {
     const { supabase } = await import('./supabase')
-    // upsert: silently ignores duplicates
-    await supabase.from('waitlist').upsert({ email: clean }, { onConflict: 'email' })
+    const { error } = await supabase
+      .from('waitlist')
+      .upsert({ email: clean }, { onConflict: 'email' })
+    if (error) throw new Error(`Supabase insert failed: ${error.message}`)
     return
   }
 
