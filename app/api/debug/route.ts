@@ -3,12 +3,15 @@ import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
   const hasKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  // Show the project ID from the URL so we can verify it matches Supabase dashboard
+  const projectId = url.replace('https://', '').split('.')[0] || '(empty)'
 
   let supabaseTest: { ok: boolean; error?: string; count?: number } = { ok: false }
 
-  if (hasUrl && hasKey) {
+  if (url && hasKey) {
     try {
       const { supabase } = await import('@/lib/supabase')
       const { data, error } = await supabase
@@ -26,7 +29,7 @@ export async function GET() {
 
   return NextResponse.json({
     env: {
-      NEXT_PUBLIC_SUPABASE_URL: hasUrl ? '✅ set' : '❌ missing',
+      NEXT_PUBLIC_SUPABASE_URL: url ? `✅ set — project: ${projectId}` : '❌ missing',
       SUPABASE_SERVICE_ROLE_KEY: hasKey ? '✅ set' : '❌ missing',
       ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? '✅ set' : '❌ missing (default: mehdi2026)',
     },
