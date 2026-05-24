@@ -1,12 +1,25 @@
 /**
- * Dual-mode storage layer
+ * Storage layer — Supabase (PostgreSQL) for production, JSON files for local dev.
  *
- * LOCAL  (no UPSTASH env vars) → reads/writes JSON files under /data/
- * PROD   (UPSTASH env vars set) → uses Upstash Redis (serverless-safe)
+ * Tables needed in Supabase (run once in SQL Editor):
+ * ─────────────────────────────────────────────────────
+ * create table waitlist (
+ *   id         bigserial primary key,
+ *   email      text unique not null,
+ *   joined_at  timestamptz default now()
+ * );
  *
- * Setup for production:
- *   Vercel dashboard → Integrations → Marketplace → "Upstash Redis" → Add
- *   (env vars are injected automatically: UPSTASH_REDIS_REST_URL + _TOKEN)
+ * create table orders (
+ *   id          text primary key,
+ *   name        text,
+ *   email       text,
+ *   product     text,
+ *   size        text,
+ *   status      text default 'pending',
+ *   total       numeric,
+ *   created_at  timestamptz default now()
+ * );
+ * ─────────────────────────────────────────────────────
  */
 
 import { promises as fs } from 'fs'
@@ -29,15 +42,17 @@ export interface OrderEntry {
   createdAt: string
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Mode detection ────────────────────────────────────────────────────────────
+function useSupabase() {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+}
+
+// ── Local file helpers ────────────────────────────────────────────────────────
 const DATA = path.join(process.cwd(), 'data')
 
 async function readJson<T>(file: string): Promise<T[]> {
-  try {
-    return JSON.parse(await fs.readFile(path.join(DATA, file), 'utf-8'))
-  } catch {
-    return []
-  }
+  try { return JSON.parse(await fs.readFile(path.join(DATA, file), 'utf-8')) }
+  catch { return [] }
 }
 
 async function writeJson<T>(file: string, data: T[]): Promise<void> {
@@ -45,44 +60,32 @@ async function writeJson<T>(file: string, data: T[]): Promise<void> {
   await fs.writeFile(path.join(DATA, file), JSON.stringify(data, null, 2), 'utf-8')
 }
 
-function getRedis() {
-  const url   = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) return null
-
-  // Lazy-import so the module is never loaded in local-file mode
-  const { Redis } = require('@upstash/redis') as typeof import('@upstash/redis')
-  return new Redis({ url, token })
-}
-
 // ── Waitlist ──────────────────────────────────────────────────────────────────
-export async function addToWaitlist(email: string): Promise<boolean> {
-  const redis = getRedis()
+export async function addToWaitlist(email: string): Promise<void> {
   const clean = email.toLowerCase().trim()
-  const joinedAt = new Date().toISOString()
 
-  if (redis) {
-    // HSETNX = set only if field doesn't exist (no duplicates)
-    const added = await redis.hsetnx('waitlist', clean, joinedAt)
-    return added === 1
+  if (useSupabase()) {
+    const { supabase } = await import('./supabase')
+    // upsert: silently ignores duplicates
+    await supabase.from('waitlist').upsert({ email: clean }, { onConflict: 'email' })
+    return
   }
 
   const list = await readJson<WaitlistEntry>('waitlist.json')
-  if (list.find(e => e.email === clean)) return false
-  list.push({ email: clean, joinedAt })
-  await writeJson('waitlist.json', list)
-  return true
+  if (!list.find(e => e.email === clean)) {
+    list.push({ email: clean, joinedAt: new Date().toISOString() })
+    await writeJson('waitlist.json', list)
+  }
 }
 
 export async function getWaitlist(): Promise<WaitlistEntry[]> {
-  const redis = getRedis()
-
-  if (redis) {
-    const data = (await redis.hgetall('waitlist')) as Record<string, string> | null
-    if (!data) return []
-    return Object.entries(data)
-      .map(([email, joinedAt]) => ({ email, joinedAt }))
-      .sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime())
+  if (useSupabase()) {
+    const { supabase } = await import('./supabase')
+    const { data } = await supabase
+      .from('waitlist')
+      .select('email, joined_at')
+      .order('joined_at', { ascending: false })
+    return (data ?? []).map(r => ({ email: r.email, joinedAt: r.joined_at }))
   }
 
   const list = await readJson<WaitlistEntry>('waitlist.json')
@@ -91,23 +94,40 @@ export async function getWaitlist(): Promise<WaitlistEntry[]> {
 
 // ── Orders ────────────────────────────────────────────────────────────────────
 export async function getOrders(): Promise<OrderEntry[]> {
-  const redis = getRedis()
-
-  if (redis) {
-    const raw = await redis.lrange('orders', 0, -1)
-    return (raw as string[])
-      .map(r => (typeof r === 'string' ? JSON.parse(r) : r) as OrderEntry)
-      .reverse()
+  if (useSupabase()) {
+    const { supabase } = await import('./supabase')
+    const { data } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+    return (data ?? []).map(r => ({
+      id:        r.id,
+      name:      r.name,
+      email:     r.email,
+      product:   r.product,
+      size:      r.size,
+      status:    r.status,
+      total:     r.total,
+      createdAt: r.created_at,
+    }))
   }
 
   return readJson<OrderEntry>('orders.json')
 }
 
 export async function addOrder(order: OrderEntry): Promise<void> {
-  const redis = getRedis()
-
-  if (redis) {
-    await redis.lpush('orders', JSON.stringify(order))
+  if (useSupabase()) {
+    const { supabase } = await import('./supabase')
+    await supabase.from('orders').insert({
+      id:         order.id,
+      name:       order.name,
+      email:      order.email,
+      product:    order.product,
+      size:       order.size,
+      status:     order.status,
+      total:      order.total,
+      created_at: order.createdAt,
+    })
     return
   }
 
