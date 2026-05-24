@@ -3,24 +3,24 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-/*
-  Place your 3 photos inside /public/ with these exact names:
-    bg1.jpg  — guy on red car
-    bg2.jpg  — aerial cobblestone street
-    bg3.jpg  — girl against wall
-*/
-const SLIDES = ['/bg1.jpg', '/bg2.jpg', '/bg3.jpg', '/bg4.jpg']
-
+// Slides are passed in from the server — any image in /public is included automatically
 const DISPLAY_MS = 5500   // how long each photo stays
 const FADE_S    = 1.8     // crossfade duration in seconds
 
-export function BackgroundSlideshow() {
+interface Props {
+  slides: string[]
+}
+
+export function BackgroundSlideshow({ slides }: Props) {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    const id = setInterval(() => setIndex(i => (i + 1) % SLIDES.length), DISPLAY_MS)
+    if (slides.length === 0) return
+    const id = setInterval(() => setIndex(i => (i + 1) % slides.length), DISPLAY_MS)
     return () => clearInterval(id)
-  }, [])
+  }, [slides.length])
+
+  if (slides.length === 0) return null
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
@@ -35,7 +35,7 @@ export function BackgroundSlideshow() {
         >
           {/* Subtle Ken Burns zoom on each slide */}
           <motion.img
-            src={SLIDES[index]}
+            src={slides[index]}
             alt=""
             className="absolute inset-0 w-full h-full object-cover object-center"
             initial={{ scale: 1.07 }}
