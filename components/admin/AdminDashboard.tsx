@@ -21,8 +21,10 @@ function fmtDate(iso: string) {
 }
 
 function exportCSV(waitlist: WaitlistEntry[]) {
-  const header = 'Email,Joined\n'
-  const rows   = waitlist.map(e => `${e.email},${fmtDate(e.joinedAt)}`).join('\n')
+  const header = 'Name,Phone,Email,Joined\n'
+  const rows   = waitlist.map(e =>
+    `"${e.name}","${e.phone}","${e.email}","${fmtDate(e.joinedAt)}"`
+  ).join('\n')
   const blob   = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' })
   const url    = URL.createObjectURL(blob)
   const a      = document.createElement('a')
@@ -77,7 +79,11 @@ export function AdminDashboard({ waitlist, orders }: Props) {
   const router = useRouter()
 
   const filteredWaitlist = useMemo(() =>
-    waitlist.filter(e => e.email.toLowerCase().includes(search.toLowerCase()))
+    waitlist.filter(e =>
+      e.email.toLowerCase().includes(search.toLowerCase()) ||
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      e.phone.includes(search)
+    )
   , [waitlist, search])
 
   const filteredOrders = useMemo(() =>
@@ -222,6 +228,8 @@ export function AdminDashboard({ waitlist, orders }: Props) {
                     <thead>
                       <tr className="border-b border-white/[0.06]">
                         <th className="text-left px-5 py-3 text-[10px] tracking-[0.25em] uppercase text-white/30 font-normal w-12">#</th>
+                        <th className="text-left px-5 py-3 text-[10px] tracking-[0.25em] uppercase text-white/30 font-normal">Name</th>
+                        <th className="text-left px-5 py-3 text-[10px] tracking-[0.25em] uppercase text-white/30 font-normal hidden sm:table-cell">Phone</th>
                         <th className="text-left px-5 py-3 text-[10px] tracking-[0.25em] uppercase text-white/30 font-normal">Email</th>
                         <th className="text-left px-5 py-3 text-[10px] tracking-[0.25em] uppercase text-white/30 font-normal hidden md:table-cell">Joined</th>
                         <th className="px-5 py-3 w-20" />
@@ -237,7 +245,9 @@ export function AdminDashboard({ waitlist, orders }: Props) {
                           transition={{ delay: i * 0.02 }}
                         >
                           <td className="px-5 py-3.5 text-white/20 text-sm tabular-nums">{i + 1}</td>
-                          <td className="px-5 py-3.5 text-white text-sm">{entry.email}</td>
+                          <td className="px-5 py-3.5 text-white text-sm">{entry.name || '—'}</td>
+                          <td className="px-5 py-3.5 text-white/55 text-sm hidden sm:table-cell">{entry.phone || '—'}</td>
+                          <td className="px-5 py-3.5 text-white/70 text-sm">{entry.email}</td>
                           <td className="px-5 py-3.5 text-white/35 text-[12px] hidden md:table-cell">
                             {fmtDate(entry.joinedAt)}
                           </td>

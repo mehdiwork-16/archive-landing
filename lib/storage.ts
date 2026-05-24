@@ -27,7 +27,9 @@ import path from 'path'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface WaitlistEntry {
-  email: string
+  name:     string
+  phone:    string
+  email:    string
   joinedAt: string
 }
 
@@ -61,21 +63,25 @@ async function writeJson<T>(file: string, data: T[]): Promise<void> {
 }
 
 // ── Waitlist ──────────────────────────────────────────────────────────────────
-export async function addToWaitlist(email: string): Promise<void> {
+export async function addToWaitlist(
+  email: string,
+  name  = '',
+  phone = '',
+): Promise<void> {
   const clean = email.toLowerCase().trim()
 
   if (useSupabase()) {
     const { supabase } = await import('./supabase')
     const { error } = await supabase
       .from('waitlist')
-      .upsert({ email: clean }, { onConflict: 'email' })
+      .upsert({ email: clean, name, phone }, { onConflict: 'email' })
     if (error) throw new Error(`Supabase insert failed: ${error.message}`)
     return
   }
 
   const list = await readJson<WaitlistEntry>('waitlist.json')
   if (!list.find(e => e.email === clean)) {
-    list.push({ email: clean, joinedAt: new Date().toISOString() })
+    list.push({ name, phone, email: clean, joinedAt: new Date().toISOString() })
     await writeJson('waitlist.json', list)
   }
 }
@@ -85,9 +91,14 @@ export async function getWaitlist(): Promise<WaitlistEntry[]> {
     const { supabase } = await import('./supabase')
     const { data } = await supabase
       .from('waitlist')
-      .select('email, joined_at')
+      .select('name, phone, email, joined_at')
       .order('joined_at', { ascending: false })
-    return (data ?? []).map(r => ({ email: r.email, joinedAt: r.joined_at }))
+    return (data ?? []).map(r => ({
+      name:     r.name     ?? '',
+      phone:    r.phone    ?? '',
+      email:    r.email,
+      joinedAt: r.joined_at,
+    }))
   }
 
   const list = await readJson<WaitlistEntry>('waitlist.json')

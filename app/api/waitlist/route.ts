@@ -11,13 +11,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 
-  const email = (body as { email?: unknown }).email
+  const { email, name, phone } = body as { email?: unknown; name?: unknown; phone?: unknown }
+
   if (typeof email !== 'string' || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
   }
 
   try {
-    await addToWaitlist(email)
+    await addToWaitlist(
+      email,
+      typeof name  === 'string' ? name.trim()  : '',
+      typeof phone === 'string' ? phone.trim() : '',
+    )
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[waitlist]', err)

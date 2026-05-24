@@ -11,14 +11,16 @@ interface WaitlistModalProps {
 }
 
 export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
+  const [name,  setName]  = useState('')
+  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [state, setState] = useState<FormState>('idle')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
 
-  // Focus input when modal opens
+  // Focus first input when modal opens
   useEffect(() => {
     if (open) {
-      const t = setTimeout(() => inputRef.current?.focus(), 380)
+      const t = setTimeout(() => nameRef.current?.focus(), 380)
       return () => clearTimeout(t)
     }
   }, [open])
@@ -37,30 +39,30 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim() || state === 'loading') return
+    if (!name.trim() || !email.trim() || state === 'loading') return
     setState('loading')
 
     try {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({
+          name:  name.trim(),
+          phone: phone.trim(),
+          email: email.trim().toLowerCase(),
+        }),
       })
 
       if (!res.ok) throw new Error()
-
-      // Also persist to localStorage as a backup
-      const stored = JSON.parse(localStorage.getItem('waitlist') || '[]') as string[]
-      if (!stored.includes(email.toLowerCase())) {
-        stored.push(email.toLowerCase())
-        localStorage.setItem('waitlist', JSON.stringify(stored))
-      }
-
       setState('success')
     } catch {
       setState('error')
     }
   }
+
+  const inputClass = `w-full border-b border-black/20 focus:border-black bg-transparent
+                      outline-none pb-3 pt-1 font-body text-sm text-black
+                      placeholder:text-black/25 transition-colors duration-200`
 
   return (
     <AnimatePresence>
@@ -112,10 +114,33 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                     Be first to know.
                   </h2>
 
-                  <form onSubmit={handleSubmit} noValidate>
-                    <div className="mb-5">
+                  <form onSubmit={handleSubmit} noValidate className="space-y-5">
+
+                    {/* Name */}
+                    <input
+                      ref={nameRef}
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Full name"
+                      required
+                      className={inputClass}
+                      style={{ letterSpacing: '0.02em' }}
+                    />
+
+                    {/* Phone */}
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Phone number"
+                      className={inputClass}
+                      style={{ letterSpacing: '0.02em' }}
+                    />
+
+                    {/* Email */}
+                    <div>
                       <input
-                        ref={inputRef}
                         type="email"
                         value={email}
                         onChange={(e) => {
@@ -124,9 +149,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                         }}
                         placeholder="your@email.com"
                         required
-                        className="w-full border-b border-black/20 focus:border-black bg-transparent
-                                   outline-none pb-3 pt-1 font-body text-sm text-black
-                                   placeholder:text-black/25 transition-colors duration-200"
+                        className={inputClass}
                         style={{ letterSpacing: '0.02em' }}
                       />
                       {state === 'error' && (
