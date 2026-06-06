@@ -10,14 +10,14 @@ export function Logo() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Icosium brand mark (white logo for the dark background) */}
+      {/* Icosium brand mark (white SVG logo for the dark background) */}
       <img
-        src="/logo.png"
+        src="/logo.svg"
         alt="Icosium"
         className="w-auto select-none"
         style={{
-          height: 'clamp(2rem, 4vw, 3rem)',
-          filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
+          height: 'clamp(2.8rem, 5.5vw, 4.25rem)',
+          filter: 'drop-shadow(0 1px 5px rgba(0,0,0,0.45))',
         }}
         draggable={false}
       />
