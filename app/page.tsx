@@ -7,7 +7,8 @@ function getBackgroundSlides(): string[] {
   try {
     const dir = path.join(process.cwd(), 'public')
     return readdirSync(dir)
-      .filter(f => /\.(jpe?g|png|webp|avif)$/i.test(f))
+      // Only background photos (bg1.jpg, bg2.png, …) — keeps logo/other assets out
+      .filter(f => /^bg.*\.(jpe?g|png|webp|avif)$/i.test(f))
       .sort()
       .map(f => `/${f}`)
   } catch {

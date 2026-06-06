@@ -10,16 +10,17 @@ export function Logo() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/*
-        Brand mark — swap "M" for your SVG logo if needed.
-        Positioned top-right by the parent header.
-      */}
-      <span
-        className="font-display font-light italic text-white tracking-[0.15em]"
-        style={{ fontSize: 'clamp(1.4rem, 2.5vw, 2rem)' }}
-      >
-        M
-      </span>
+      {/* Icosium brand mark (white logo for the dark background) */}
+      <img
+        src="/logo.png"
+        alt="Icosium"
+        className="w-auto select-none"
+        style={{
+          height: 'clamp(2rem, 4vw, 3rem)',
+          filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
+        }}
+        draggable={false}
+      />
     </motion.div>
   )
 }
